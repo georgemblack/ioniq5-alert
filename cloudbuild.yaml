@@ -34,6 +34,6 @@ steps:
       - "--platform"
       - "managed"
       - "--service-account"
-      - "ioniqalert-service@ioniqalert.iam.gserviceaccount.com"
+      - "ioniq-alert-service@ioniqalert.iam.gserviceaccount.com"
 images:
   - "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniqalert:$COMMIT_SHA"
