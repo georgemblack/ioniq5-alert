@@ -4,23 +4,23 @@ steps:
       [
         "build",
         "-t",
-        "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniq-alert:$COMMIT_SHA",
+        "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniqalert:$COMMIT_SHA",
         ".",
       ]
   - name: "gcr.io/cloud-builders/docker"
     args:
       [
         "push",
-        "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniq-alert:$COMMIT_SHA",
+        "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniqalert:$COMMIT_SHA",
       ]
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     entrypoint: gcloud
     args:
       - "run"
       - "deploy"
-      - "ioniq-alert"
+      - "ioniqalert"
       - "--image"
-      - "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniq-alert:$COMMIT_SHA"
+      - "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniqalert:$COMMIT_SHA"
       - "--region"
       - "us-east1"
       - "--concurrency"
@@ -34,6 +34,6 @@ steps:
       - "--platform"
       - "managed"
       - "--service-account"
-      - "ioniq-alert-service@ioniqalert.iam.gserviceaccount.com"
+      - "ioniqalert-service@ioniqalert.iam.gserviceaccount.com"
 images:
-  - "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniq-alert:$COMMIT_SHA"
+  - "us-east1-docker.pkg.dev/$PROJECT_ID/private/ioniqalert:$COMMIT_SHA"
