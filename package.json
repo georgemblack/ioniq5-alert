@@ -1,0 +1,20 @@
+{
+  "name": "ioniq5-alert",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/georgemblack/ioniq5-alert.git",
+  "author": "George Black <contact@george.black>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node --experimental-fetch src/app.js",
+    "format": "prettier --write ./src"
+  },
+  "devDependencies": {
+    "prettier": "^2.5.1"
+  },
+  "dependencies": {
+    "@google-cloud/firestore": "^5.0.2",
+    "express": "^4.17.2",
+    "pino-http": "^6.6.0"
+  }
+}
