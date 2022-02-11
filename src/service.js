@@ -1,76 +1,45 @@
-const ZIP_CODE = "00000";
-const RADIUS = "250";
-
-const exteriorColorCodes = {
-  SAW: "Atlas White",
-  C5G: "Cyber Gray",
-  T5R: "Shooting Star",
-  M9U: "Digital Teal",
-  MZH: "Phantom Black",
-  U3P: "Lucid Blue",
-};
-
-const driveTrainCodes = {
-  "ALL WHEEL DRIVE": "AWD",
-  "REAR WHEEL DRIVE": "RWD",
-};
+const { getAlert, updateAlert } = require("./firestore.js");
+const { sendNotification } = require("./pushover.js");
+const { getAllVehicles } = require("./hyundai.js");
 
 async function run() {
-  const url =
-    "https://www.hyundaiusa.com/var/hyundai/services/inventory/vehicleList.json?" +
-    new URLSearchParams({
-      zip: ZIP_CODE,
-      radius: RADIUS,
-      year: "2022",
-      model: "Ioniq-5",
-    });
-  const options = {
-    method: "GET",
-    headers: {
-      Referer:
-        "https://www.hyundaiusa.com/us/en/inventory-search/vehicles-list?model=Ioniq%205&year=2022",
-    },
-  };
+  // Get alert configuration
+  let alert = await getAlert();
 
-  let response = await fetch(url, options);
-  let responseBody = await response.json();
+  // Get all vehicles
+  const allVehicles = await getAllVehicles(alert.zip, alert.radius);
 
-  if (response.status !== 200) {
-    console.log("Error fetching data from inventory API");
-    return;
+  // Remove unwanted vehicles
+  const preferredVehicles = allVehicles.filter((vehicle) => {
+    return isPreferredVehicle(vehicle, alert);
+  });
+
+  // Find only new vehicles
+  const newVehicles = preferredVehicles.filter((vehicle) => {
+    return isNewVehicle(vehicle, alert.trackedVins);
+  });
+
+  // Alert for each new vehicle
+  for (let vehicle of newVehicles) {
+    const message = `Ioniq 5: ${vehicle.trim}, ${vehicle.driveTrain}, ${vehicle.exteriorColor} at ${vehicle.dealer} for ${vehicle.price}`;
+    await sendNotification(alert.pushoverToken, alert.pushoverUser, message);
   }
 
-  let vehicles = [];
-
-  for (let dataGroup of responseBody.data) {
-    for (let dealer of dataGroup.dealerInfo) {
-      if (dealer.vehicles) {
-        for (let vehicle of dealer.vehicles) {
-          vehicles.push({
-            dealer: dealer.dealerNm,
-            trim: vehicle.trimDesc,
-            price: vehicle.price,
-            exteriorColor: getExteriorColor(vehicle.exteriorColorCd),
-            driveTrain: getDriveTrain(vehicle.drivetrainDesc),
-          });
-        }
-      }
-    }
-  }
+  // Update tracked vehicles
+  let trackedVins = preferredVehicles.map((vehicle) => vehicle.vin);
+  alert.trackedVins = trackedVins;
+  await updateAlert(alert);
 }
 
-function getExteriorColor(colorCode) {
-  if (colorCode in exteriorColorCodes) {
-    return exteriorColorCodes[colorCode];
-  }
-  return "Unknown";
+function isNewVehicle(vehicle, existingVins) {
+  return !existingVins.includes(vehicle.vin);
 }
 
-function getDriveTrain(driveTrainCode) {
-  if (driveTrainCode in driveTrainCodes) {
-    return driveTrainCodes[driveTrainCode];
-  }
-  return "Unknown";
+function isPreferredVehicle(vehicle, preferences) {
+  if (!preferences.trims.includes(vehicle.trim)) return false;
+  if (!preferences.driveTrains.includes(vehicle.driveTrain)) return false;
+  if (!preferences.exteriorColors.includes(vehicle.exteriorColor)) return false;
+  return true;
 }
 
 module.exports = {
