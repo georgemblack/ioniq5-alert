@@ -1,3 +1,3 @@
 # Ioniq 5 Alert
 
-Test change
+This is a small application used to alert when new Hyundai Ioniq inventory becomes available. More to come, maybe?

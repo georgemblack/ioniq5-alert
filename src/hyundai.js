@@ -1,3 +1,10 @@
+const logger = require("./logger.js");
+
+const INVENTORY_ENDPOINT =
+  "https://www.hyundaiusa.com/var/hyundai/services/inventory/vehicleList.json";
+const INVENTORY_REFERER_HEADER =
+  "https://www.hyundaiusa.com/us/en/inventory-search/vehicles-list?model=Ioniq%205&year=2022";
+
 const exteriorColorCodes = {
   SAW: "Atlas White",
   C5G: "Cyber Gray",
@@ -12,11 +19,16 @@ const driveTrainCodes = {
   "REAR WHEEL DRIVE": "RWD",
 };
 
+/**
+ * Fetch all vehicles from Hyundai inventory API.
+ * Return only relevant details of each vehicle.
+ */
 async function getAllVehicles(zip, radius) {
   let vehicles = [];
 
   const url =
-    "https://www.hyundaiusa.com/var/hyundai/services/inventory/vehicleList.json?" +
+    INVENTORY_ENDPOINT +
+    "?" +
     new URLSearchParams({
       zip: zip,
       radius: radius,
@@ -26,8 +38,7 @@ async function getAllVehicles(zip, radius) {
   const options = {
     method: "GET",
     headers: {
-      Referer:
-        "https://www.hyundaiusa.com/us/en/inventory-search/vehicles-list?model=Ioniq%205&year=2022",
+      Referer: INVENTORY_REFERER_HEADER,
     },
   };
 
@@ -35,8 +46,10 @@ async function getAllVehicles(zip, radius) {
   let responseBody = await response.json();
 
   if (response.status !== 200) {
-    console.log("Error fetching data from inventory API");
-    return;
+    logger.error(
+      `Failed to fetch vehicles from inventory API, received status: ${response.status}`
+    );
+    return [];
   }
 
   for (let dataGroup of responseBody.data) {

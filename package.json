@@ -15,6 +15,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^5.0.2",
     "express": "^4.17.2",
+    "pino": "^7.6.5",
     "pino-http": "^6.6.0"
   }
 }

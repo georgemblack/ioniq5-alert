@@ -1,3 +1,4 @@
+const logger = require("./logger.js");
 const { getAlert, updateAlert } = require("./firestore.js");
 const { sendNotification } = require("./pushover.js");
 const { getAllVehicles } = require("./hyundai.js");
@@ -7,6 +8,7 @@ async function run() {
   let alert = await getAlert();
 
   // Get all vehicles
+  logger.info(`Fetching all vehicles for alert configuration: ${alert.id}`);
   const allVehicles = await getAllVehicles(alert.zip, alert.radius);
 
   // Remove unwanted vehicles
@@ -18,6 +20,9 @@ async function run() {
   const newVehicles = preferredVehicles.filter((vehicle) => {
     return isNewVehicle(vehicle, alert.trackedVins);
   });
+  logger.info(
+    `Discovered ${newVehicles.length} new vehicles for alert configuration: ${alert.id}`
+  );
 
   // Alert for each new vehicle
   for (let vehicle of newVehicles) {
@@ -26,6 +31,7 @@ async function run() {
   }
 
   // Update tracked vehicles
+  logger.info(`Updating tracked VINs for alert configuration: ${alert.id}`);
   let trackedVins = preferredVehicles.map((vehicle) => vehicle.vin);
   alert.trackedVins = trackedVins;
   await updateAlert(alert);
