@@ -20,11 +20,15 @@ app.use((req, res, next) => {
 });
 
 /**
- * Top-level routes
+ * Routes
  */
 app.get("/", async (req, res) => {
+  res.status(200).send();
+});
+
+app.post("/", async (req, res) => {
   await service.run();
-  res.status(200).send("Done!");
+  res.status(200).send();
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
