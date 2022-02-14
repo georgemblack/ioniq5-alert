@@ -16,7 +16,7 @@ async function run() {
     return isPreferredVehicle(vehicle, alert);
   });
 
-  // Find only new vehicles
+  // Find new (untracked) vehicles
   const newVehicles = preferredVehicles.filter((vehicle) => {
     return isNewVehicle(vehicle, alert.trackedVins);
   });
@@ -26,7 +26,20 @@ async function run() {
 
   // Alert for each new vehicle
   for (let vehicle of newVehicles) {
-    const message = `Ioniq 5: ${vehicle.trim}, ${vehicle.driveTrain}, ${vehicle.exteriorColor} at ${vehicle.dealer} for ${vehicle.price}`;
+    const message = `NEW Ioniq 5: ${vehicle.trim}, ${vehicle.driveTrain}, ${vehicle.exteriorColor} at ${vehicle.dealer} for ${vehicle.price}`;
+    await sendNotification(alert.pushoverToken, alert.pushoverUser, message);
+  }
+
+  // Find lost (sold) vehicles
+  const lostVehicleVins = alert.trackedVins.filter((vin) => {
+    return !preferredVehicles.find((vehicle) => {
+      return vehicle.vin === vin;
+    });
+  });
+
+  // Alert for each lost vehicle
+  for (let vin of lostVehicleVins) {
+    const message = `LOST Ioniq 5: ${vin}`;
     await sendNotification(alert.pushoverToken, alert.pushoverUser, message);
   }
 
